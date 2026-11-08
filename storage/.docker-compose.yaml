@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  ticket_mongo: # rename for castom database_host
+    container_name: ticket_mongo # rename for castom database_host
+    image: mongo:4.4.6
+    restart: always
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${DATABASE_USER}"
+      MONGO_INITDB_ROOT_PASSWORD: "${DATABASE_PASSWORD}"
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - "${EXPRESS_PORT}:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: "${DATABASE_USER}"
+      ME_CONFIG_MONGODB_ADMINPASSWORD: "${DATABASE_PASSWORD}"
+      ME_CONFIG_BASICAUTH_USERNAME: "${DATABASE_USER}"
+      ME_CONFIG_BASICAUTH_PASSWORD: "${DATABASE_PASSWORD}"
+      ME_CONFIG_MONGODB_SERVER: "ticket_mongo"
+    depends_on:
+      - ticket_mongo # rename for castom database_host
+
+  ticket_support_bot:
+      build: .
+      container_name: ticket_support_bot
+      restart: always
+      depends_on:
+        - ticket_mongo # rename for castom database_host
+      volumes:
+        - /root/ticket_support_bot/storage:/usr/src/app/ticket_support_bot/storage
